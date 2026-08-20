@@ -1,0 +1,151 @@
+project:
+  name: ashare-sentiment-engine
+  timezone: Asia/Shanghai
+
+data:
+  provider: ${DATA_PROVIDER:tushare}
+  cache_root: ${ASHARE_CACHE_ROOT:data/cache}
+  raw_root: data/raw
+  processed_root: data/processed
+  http_cache_root: data/raw/http
+  history_start: 2021-01-01
+  request_timeout_seconds: 15
+  request_min_interval_seconds: 0.20
+  request_retries: 3
+  progress_every_symbols: 100
+  download_workers: 1
+  # Optional endpoint override. Keep the token in .env only.
+  tushare_endpoint: ${TUSHARE_ENDPOINT:https://api.tushare.pro}
+  tushare_checkpoint_root: data/raw/tushare_checkpoints
+  tushare_include_delisted: false
+  # null means the complete available SSE/SZSE universe. Set only for smoke tests.
+  max_symbols: null
+  lookback_days: 756
+  min_periods: 252
+  include_beijing: false
+  exclude_st: true
+  # Point-in-time membership is not guaranteed by the default adapters.
+  survivorship_bias_warning: true
+  limit_provider: tushare
+  allow_approximate_limit_rules: false
+
+data_quality:
+  # v0.2.1 integrity thresholds. Legacy names remain accepted by the code.
+  minimum_expected_universe: 3000
+  minimum_market_coverage_ratio: 0.90
+  max_cross_module_universe_deviation: 0.10
+  minimum_relative_universe_ratio: 0.80
+  minimum_market_universe: 3000
+  minimum_coverage_ratio: 0.90
+  degenerate_factor:
+    window: 20
+    max_unique: 2
+    minimum_valid: 5
+    variance_floor: 1.0e-12
+
+universe:
+  exchanges: [SSE, SZSE]
+  exclude_bse: true
+  exclude_st: true
+  exclude_recent_ipos_days: 20
+
+benchmarks:
+  - {name: 沪深300, ts_code: 000300.SH}
+  - {name: 中证1000, ts_code: 000852.SH}
+  - {name: 创业板指, ts_code: 399006.SZ}
+  - {name: 科创50, ts_code: 000688.SH}
+
+scoring:
+  weights:
+    breadth: 0.30
+    profit_effect: 0.25
+    liquidity: 0.15
+    options: 0.15
+    stretch: 0.15
+  percentile:
+    lookback: 756
+    min_periods: 252
+    winsorize_limits: [0.01, 0.99]
+  smoothing:
+    ema_span: 3
+    slope_days: 3
+
+# MarketTemperature v0.3.1 research defaults. These parameters describe market
+# state definitions; they are not optimized trading parameters.
+state_machine:
+  ema_span: 3
+  cold_threshold: 20
+  cool_threshold: 30
+  warm_threshold: 70
+  hot_threshold: 80
+  turning_window: 10
+  turning_delta: 5
+  slope_lookback: 3
+  slope3_threshold: 4
+  minimum_confirming_modules: 3
+  confirmation_days: 2
+  watch_timeout: 5
+  zone_hysteresis: 3
+
+episode_anchor:
+  raw_panic_threshold: 20
+  smoothed_panic_threshold: 20
+  module_panic_threshold: 20
+  raw_euphoria_threshold: 85
+  smoothed_euphoria_threshold: 80
+  module_euphoria_threshold: 80
+  minimum_extreme_modules: 2
+  memory_window: 10
+
+# MarketTemperature v0.4 event-study research settings. These affect only
+# descriptive validation outputs; they do not change the frozen v0.3.1 signal
+# contract and are not optimized trading parameters.
+event_study:
+  horizons: [1, 3, 5, 10, 20, 40, 60]
+  decluster_window: 20
+  bootstrap_samples: 10000
+  bootstrap_seed: 42
+  development_end: 2024-12-31
+
+factors:
+  breadth_weights:
+    adv_ratio: 0.30
+    above_ma20_ratio: 0.25
+    above_ma60_ratio: 0.25
+    nhnl_ratio: 0.20
+  profit_effect_weights:
+    limit_up_rate: 0.35
+    limit_down_rate: 0.25
+    yesterday_limitup_mean_return: 0.40
+    failed_limit_rate: 0.00
+  liquidity_weights:
+    turnover_percentile: 0.50
+    signed_turnover_intensity: 0.50
+  stretch_weights:
+    rsi14: 0.25
+    ma20_atr: 0.25
+    return5d: 0.25
+    return20d: 0.25
+  windows:
+    ma20: 20
+    ma60: 60
+    new_high_low: 60
+    turnover_zscore: 60
+    rsi: 14
+    atr: 14
+
+portfolio:
+  core_weight: 0.60
+  tactical_weight: 0.40
+
+realtime:
+  enabled: true
+  refresh_seconds: 60
+  max_staleness_seconds: 180
+  request_timeout_seconds: 5
+  request_retries: 0
+  # Intraday values are non-persistent estimates. Official history remains
+  # based on complete daily closes.
+  # Tencent's batched quote endpoint is the low-latency primary source;
+  # Eastmoney remains the fallback and supplies the intraday limit pools.
+  source: tencent/eastmoney

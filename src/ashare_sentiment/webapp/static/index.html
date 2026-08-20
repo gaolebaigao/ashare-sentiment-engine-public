@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>市场温度 MarketTemperature · A股情绪导航仪</title>
+  <link rel="stylesheet" href="/static/app.css?v=live-1">
+</head>
+<body data-theme="light">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-lockup"><span class="brand-mark">温</span><div><div class="brand">市场温度</div><div class="brand-subtitle">A股情绪导航仪</div></div></div>
+      <nav id="navigation" aria-label="主导航">
+        <button class="nav-item active" data-page="overview" aria-current="page"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.7l8.5 6.8"/><path d="M5.5 9.3v10.2h13V9.3M9.5 19.5v-6h5v6"/></svg></span><span>市场概览</span></button>
+        <button class="nav-item" data-page="history"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span>历史回看</span></button>
+        <button class="nav-item" data-page="episodes"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3.5 8.5 8.5-8.5 8.5L3.5 12 12 3.5Z"/></svg></span><span>事件周期</span></button>
+        <button class="nav-item" data-page="diagnostics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.3 4.3L19 7"/></svg></span><span>数据诊断</span></button>
+        <button class="nav-item" data-page="settings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span><span>偏好设置</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div id="data-source-status" class="sidebar-foot loading"><span class="status-dot"></span><span>正在连接实时行情</span></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">市场概览</h1>
+          <p id="page-subtitle">今天的市场环境、温度和可观察信号</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="warning-button" class="notes-button"><span class="notes-dot"></span><span>数据说明 0</span></button>
+          <button id="top-refresh-button" class="primary-button"><span class="refresh-icon">↻</span><span>刷新数据</span></button>
+        </div>
+      </header>
+
+      <section id="overview-page" class="page active"></section>
+
+      <section id="history-page" class="page">
+        <div class="toolbar panel">
+          <button id="previous-date" class="icon-text-button" aria-label="上一个交易日">‹</button>
+          <label class="date-field"><span>交易日</span><input id="history-date" type="date"></label>
+          <button id="next-date" class="icon-text-button" aria-label="下一个交易日">›</button>
+          <div class="toolbar-spacer"></div>
+          <label>趋势范围 <select id="history-range" aria-label="趋势范围"><option>3M</option><option>6M</option><option selected>1Y</option><option>All</option></select></label>
+        </div>
+        <div id="history-card"></div>
+        <div class="panel timeline-panel">
+          <div class="section-heading">建议时间线 <span>· 历史记录</span></div>
+          <div class="table-wrap"><table><thead><tr><th>日期</th><th>状态</th><th>Advisory</th><th>温度 / 平滑</th></tr></thead><tbody id="history-table"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="episodes-page" class="page">
+        <div class="section-heading">事件周期</div>
+        <p class="page-note">查看恐慌与高温事件的生命周期，不展示收益、CAGR、Sharpe 或最佳入场点。</p>
+        <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>类型</th><th>状态</th><th>开始</th><th>极值</th><th>观察</th><th>确认</th><th>结束</th><th>状态序列</th></tr></thead><tbody id="episodes-table"></tbody></table></div></div>
+      </section>
+
+      <section id="diagnostics-page" class="page">
+        <div class="section-heading">数据诊断</div>
+        <p class="page-note">数据质量、覆盖率和最近一次计算状态</p>
+        <div id="diagnostics-cards" class="metric-grid six"></div>
+        <div class="panel warning-panel"><div class="section-heading">Warnings</div><div id="diagnostics-warnings" class="warning-list"></div><div id="diagnostics-pipeline" class="muted pipeline-line"></div></div>
+      </section>
+
+      <section id="settings-page" class="page">
+        <div class="section-heading">偏好设置</div>
+        <p class="page-note">仅调整界面与本地工作流，不暴露模型参数。</p>
+        <div class="panel settings-panel">
+          <div class="setting-row"><div><strong>外观</strong><div class="muted">跟随系统、浅色或深色</div></div><select id="theme-select"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
+          <div class="setting-row"><div><strong>默认趋势范围</strong><div class="muted">历史页的默认时间窗口</div></div><select id="default-range"><option>3M</option><option>6M</option><option selected>1Y</option><option>All</option></select></div>
+        </div>
+        <div class="panel settings-panel"><div class="section-heading">本地数据路径</div><div class="path-row"><span>处理数据</span><code id="processed-path">—</code></div><div class="path-row"><span>报告</span><code id="reports-path">—</code></div><div class="path-row"><span>配置</span><code id="config-path">—</code></div></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="warning-dialog"><div class="dialog-header"><h2>数据说明</h2><button id="close-dialog" class="icon-button" aria-label="关闭">×</button></div><div id="warning-dialog-body"></div></dialog>
+  <script src="/static/app.js?v=live-1"></script>
+</body>
+</html>
